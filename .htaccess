@@ -1,0 +1,16 @@
+# Lindungi file sensitif dan direktori internal di Apache
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(router\.php|README\.md)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(src|tests)(/|$) - [F,L]
+    RewriteRule ^test-token/?$ test-token.php [L,QSA]
+    RewriteRule ^login/?$ test-token.php [L,QSA]
+    RewriteRule ^version/?$ version.php [L,QSA]
+</IfModule>
