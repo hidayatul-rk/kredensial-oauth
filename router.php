@@ -30,6 +30,11 @@ if ($path === '/test-token' || $path === '/login' || $path === '/test-token.php'
     return true;
 }
 
+if ($path === '/datautama' || $path === '/datautama.php') {
+    require __DIR__ . '/datautama.php';
+    return true;
+}
+
 if ($path === '/version' || $path === '/version.php') {
     require __DIR__ . '/version.php';
     return true;

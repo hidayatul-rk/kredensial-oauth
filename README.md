@@ -15,6 +15,11 @@ Aplikasi web **PHP + cURL** mandiri (tanpa dependency eksternal / Composer) yang
   - Tombol **Uji Login & Ambil Token** melalui `POST test-token.php` (atau `/test-token` / `/login`) menggunakan PHP `curl_init`
   - `Authorization Token` (terisi otomatis saat uji login berhasil) dengan tombol `Lihat` dan `Salin`
   - `Auth Header Token` (opsional untuk header `Auth` SIASN) dengan tombol `Lihat` dan `Salin`
+- Form **Uji Data Utama PNS (SIASN)**:
+  - Input `NIP PNS` (9 sampai 18 digit angka)
+  - `Data Utama URL` yang dikunci ke konfigurasi server (`.env`, default `https://apimws.bkn.go.id:8243/apisiasn/1.0/pns/data-utama/{nip}`)
+  - Tombol **Ambil Data Utama** melalui `POST datautama.php` (atau `/datautama`) menggunakan PHP `curl_init` dengan header `Authorization: Bearer ...` dan `Auth: bearer ...`
+  - Ringkasan data pegawai & panel JSON dengan tombol `Salin JSON` dan `Bersihkan`
 - Indikator status koneksi real-time pada topbar dan toggle tema **Terang / Gelap** (`localStorage`).
 - Pengamanan bawaan: proteksi CSRF, validasi URL token HTTPS (anti-SSRF), rate limiting percobaan login, validasi `Host` header, security headers, dan HTTP Basic Auth opsional untuk akses non-loopback.
 
@@ -30,6 +35,9 @@ Copy-Item .env.example .env
 - `BKN_HOST` — host OAuth2 BKN (default `https://apimws.bkn.go.id`)
 - `BKN_TOKEN_PATH` — path token OAuth2 (default `/oauth2/token`)
 - `BKN_TOKEN_URL` — URL token HTTPS penuh; bila kosong memakai `BKN_HOST` + `BKN_TOKEN_PATH`
+- `BKN_API_HOST` — host API Gateway SIASN BKN (default `https://apimws.bkn.go.id:8243` saat `BKN_HOST` memakai `https://apimws.bkn.go.id`)
+- `BKN_DATA_UTAMA_PATH` — path endpoint Data Utama PNS SIASN (default `/apisiasn/1.0/pns/data-utama`)
+- `BKN_DATA_UTAMA_URL` — URL Data Utama HTTPS penuh; bila kosong memakai `BKN_API_HOST` + `BKN_DATA_UTAMA_PATH` (mendukung placeholder `{nip}`)
 - `BKN_GRANT_TYPE` — tipe grant OAuth2 (default `client_credentials`)
 - `TIMEOUT` — timeout request cURL dalam detik (default `30`)
 
@@ -72,6 +80,7 @@ Salin atau arahkan folder ini ke `htdocs` (misalnya `C:\xampp\htdocs\kredential-
 
 - `GET /` (`index.php`) — halaman utama UI Kredensial API BKN
 - `POST /test-token.php` (alias `/test-token`, `/login` via `router.php`/`.htaccess`) — menukar `username` & `password` dengan `access_token` OAuth2 BKN melalui PHP cURL
+- `POST /datautama.php` (alias `/datautama` via `router.php`/`.htaccess`) — mengambil Data Utama PNS SIASN BKN (`GET` ke URL BKN terkonfigurasi) memakai `nip`, `access_token`, dan opsional `auth_header_token`
 - `GET /version.php` (alias `/version`) — mengembalikan versi aplikasi (`1.0.0`) dalam format JSON
 
 ## Keamanan Kredensial & Hardening
@@ -87,6 +96,7 @@ Salin atau arahkan folder ini ke `htdocs` (misalnya `C:\xampp\htdocs\kredential-
 
 - `index.php` — halaman antarmuka web utama
 - `test-token.php` — endpoint JSON untuk permintaan token OAuth2
+- `datautama.php` — endpoint JSON untuk pengambilan Data Utama PNS SIASN BKN
 - `version.php` — endpoint JSON informasi versi aplikasi
 - `router.php` — router PHP built-in server (termasuk blokir path sensitif)
 - `run.bat` — launcher server lokal Windows

@@ -12,5 +12,6 @@
     RewriteRule ^(src|tests)(/|$) - [F,L]
     RewriteRule ^test-token/?$ test-token.php [L,QSA]
     RewriteRule ^login/?$ test-token.php [L,QSA]
+    RewriteRule ^datautama/?$ datautama.php [L,QSA]
     RewriteRule ^version/?$ version.php [L,QSA]
 </IfModule>

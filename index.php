@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/src/bootstrap.php';
 
 use App\AuthHandler;
+use App\BknClient;
 use App\Security;
 use App\Settings;
 
@@ -19,6 +20,7 @@ header('Content-Type: text/html; charset=utf-8');
 
 $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $csrfToken = (string) $boot['csrf_token'];
+$dataUtamaTemplateUrl = BknClient::formatDataUtamaTemplate($settings->dataUtamaUrl);
 ?>
 <!doctype html>
 <html lang="id">
@@ -27,6 +29,7 @@ $csrfToken = (string) $boot['csrf_token'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="<?= $e($csrfToken) ?>" />
     <meta name="test-token-url" content="test-token.php" />
+    <meta name="data-utama-url" content="datautama.php" />
     <title>Kredensial API BKN - SIASN</title>
     <script>
         try {
@@ -122,6 +125,45 @@ $csrfToken = (string) $boot['csrf_token'];
                             <button type="button" class="toggle-vis" onclick="copyToken('authHeaderToken', this)">Salin</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="dataUtamaTitle">
+            <div class="card-head">
+                <h2 id="dataUtamaTitle">Uji Data Utama PNS (SIASN)</h2>
+                <span class="card-sub">GET /pns/data-utama/{nip}</span>
+            </div>
+            <div class="card-body">
+                <p class="settings-note">Masukkan NIP PNS untuk mengambil data utama dari API SIASN BKN menggunakan <strong>Authorization Token</strong> dan <strong>Auth Header Token</strong> di atas.</p>
+
+                <form id="dataUtamaForm" onsubmit="event.preventDefault(); fetchDataUtama();">
+                    <div class="form-group">
+                        <label for="nipInput">NIP PNS</label>
+                        <div class="hint">Masukkan 9 sampai 18 digit angka NIP (contoh: <code>198612262009121001</code>).</div>
+                        <input type="text" id="nipInput" inputmode="numeric" maxlength="18" placeholder="18 digit NIP PNS" autocomplete="off" />
+                    </div>
+                    <div class="form-group">
+                        <label for="dataUtamaUrl">Data Utama URL</label>
+                        <div class="hint">Diatur oleh server melalui <code>BKN_DATA_UTAMA_URL</code> atau <code>BKN_API_HOST</code> + <code>BKN_DATA_UTAMA_PATH</code>.</div>
+                        <input type="text" id="dataUtamaUrl" value="<?= $e($dataUtamaTemplateUrl) ?>" readonly />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btnFetchDataUtama">Ambil Data Utama</button>
+                    <div id="dataUtamaResult" class="conn-result" role="status" aria-live="polite"></div>
+                </form>
+
+                <div id="dataUtamaResponsePanel" class="response-panel" hidden>
+                    <hr class="divider" />
+                    <div class="response-head">
+                        <span class="response-title">Respons Data Utama</span>
+                        <div class="response-actions">
+                            <button type="button" class="toggle-vis" id="btnCopyDataUtama" onclick="copyDataUtamaJson(this)">Salin JSON</button>
+                            <button type="button" class="toggle-vis" onclick="clearDataUtamaResult()">Bersihkan</button>
+                        </div>
+                    </div>
+                    <div id="dataUtamaSummary" class="summary-grid" hidden></div>
+                    <pre id="dataUtamaJson" class="json-output"></pre>
                 </div>
             </div>
         </section>

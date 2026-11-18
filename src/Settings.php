@@ -8,8 +8,11 @@ final class Settings
     public const APP_VERSION = '1.0.0';
 
     public string $bknHost;
+    public string $bknApiHost;
     public string $tokenPath;
     public string $tokenUrl;
+    public string $dataUtamaPath;
+    public string $dataUtamaUrl;
     public string $grantType;
     public int $timeout;
     public string $appBasicUser;
@@ -33,12 +36,35 @@ final class Settings
         bool $trustProxy = false,
         bool $cookieSecure = false,
         int $loginRateMax = 10,
-        float $loginRateWindow = 60.0
+        float $loginRateWindow = 60.0,
+        string $dataUtamaPath = '/apisiasn/1.0/pns/data-utama',
+        string $dataUtamaUrl = '',
+        string $bknApiHost = ''
     ) {
         $this->bknHost = rtrim(trim($bknHost), '/');
         $this->tokenPath = trim($tokenPath) !== '' ? trim($tokenPath) : '/oauth2/token';
         $explicitUrl = trim($tokenUrl);
         $this->tokenUrl = $explicitUrl !== '' ? $explicitUrl : ($this->bknHost . $this->tokenPath);
+
+        $explicitApiHost = rtrim(trim($bknApiHost), '/');
+        if ($explicitApiHost !== '') {
+            $this->bknApiHost = $explicitApiHost;
+        } elseif ($this->bknHost === 'https://apimws.bkn.go.id') {
+            // Gateway API SIASN pada apimws.bkn.go.id menggunakan port 8243 (port 443 hanya untuk /oauth2/token & console).
+            $this->bknApiHost = 'https://apimws.bkn.go.id:8243';
+        } else {
+            $this->bknApiHost = $this->bknHost;
+        }
+
+        $rawDataUtamaPath = trim($dataUtamaPath);
+        $this->dataUtamaPath = $rawDataUtamaPath !== ''
+            ? ('/' . ltrim(rtrim($rawDataUtamaPath, '/'), '/'))
+            : '/apisiasn/1.0/pns/data-utama';
+        $explicitDataUtamaUrl = rtrim(trim($dataUtamaUrl), '/');
+        $this->dataUtamaUrl = $explicitDataUtamaUrl !== ''
+            ? $explicitDataUtamaUrl
+            : ($this->bknApiHost . $this->dataUtamaPath);
+
         $this->grantType = trim($grantType) !== '' ? trim($grantType) : 'client_credentials';
         $this->timeout = max(1, $timeout);
         $this->appBasicUser = trim($appBasicUser);
@@ -79,7 +105,10 @@ final class Settings
             trustProxy: self::env('TRUST_PROXY', '0') === '1',
             cookieSecure: self::env('COOKIE_SECURE', '0') === '1',
             loginRateMax: (int) self::env('LOGIN_RATE_MAX', '10'),
-            loginRateWindow: (float) self::env('LOGIN_RATE_WINDOW', '60')
+            loginRateWindow: (float) self::env('LOGIN_RATE_WINDOW', '60'),
+            dataUtamaPath: self::env('BKN_DATA_UTAMA_PATH', '/apisiasn/1.0/pns/data-utama'),
+            dataUtamaUrl: self::env('BKN_DATA_UTAMA_URL', ''),
+            bknApiHost: self::env('BKN_API_HOST', '')
         );
     }
 
